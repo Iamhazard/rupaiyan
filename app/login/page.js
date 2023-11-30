@@ -1,6 +1,61 @@
-import React from "react";
+"use client";
+
+import { SET_LOGIN, SET_USER } from "@/Redux/Features/authSlice";
+import { loginUser } from "@/services/authServices";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
 
 const Login = () => {
+  const [isloading, setisLoading] = useState(false);
+  const [error, setError] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm();
+  const dispatch = useDispatch();
+  const router = useRouter();
+  // const onSubmitLogin = async (data) => {
+  //   try {
+  //     setisLoading(true);
+  //     if (!data.email || !data.password) {
+  //       alert("All fields are required");
+  //     } else {
+  //       const formData = await loginUser(data);
+  //       console.log(formData);
+  //       await dispatch(SET_LOGIN(true));
+  //       await dispatch(SET_USER(formData));
+  //       router.push("/");
+  //       setisLoading(false);
+  //       alert("Login successful");
+  //     }
+  //   } catch (error) {
+  //     setisLoading(false);
+  //     console.error(error);
+  //     alert("An error occurred during Login.");
+  //   }
+  // };
+
+  const onSubmitLogin = async (data) => {
+    try {
+      const res = await signIn("credentials", {
+        data,
+        redirect: false,
+      });
+      if (res.error) {
+        setError("Invalid Credentials");
+        return;
+      }
+      router.push("/");
+    } catch (error) {
+      console.error("Error during login:", error);
+      setError("An unexpected error occurred. Please try again.");
+    }
+  };
   return (
     <div className="flex flex-col bg-white shadow-md px-4 sm:px-6 md:px-8 lg:px-10 py-8 rounded-3xl w-50 max-w-md">
       <div className="flex flex-col items-center mt-[5vh]">
@@ -17,11 +72,11 @@ const Login = () => {
               xmlns="http://www.w3.org/2000/svg"
               xmlnsXlink="http://www.w3.org/1999/xlink"
               fill="#000000">
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
               <g
                 id="SVGRepo_tracerCarrier"
-                stroke-linecap="round"
-                stroke-linejoin="round"></g>
+                strokeLinecap="round"
+                strokeLinejoin="round"></g>
               <g id="SVGRepo_iconCarrier">
                 <title>Google-color</title>
                 <desc>Created with Sketch.</desc>
@@ -29,9 +84,9 @@ const Login = () => {
                 <g
                   id="Icons"
                   stroke="none"
-                  stroke-width="1"
+                  strokeWidth="1"
                   fill="none"
-                  fill-rule="evenodd">
+                  fillRule="evenodd">
                   <g
                     id="Color-"
                     transform="translate(-401.000000, -860.000000)">
@@ -66,27 +121,35 @@ const Login = () => {
           </span>
         </button>
         <span className="mb-2 text-gray-900">Or</span>
-        <form>
+        <form
+          onSubmit={handleSubmit(onSubmitLogin)}
+          action={"/api/auth/callback/credentials"}>
           <input
             type="text"
             className="w-full px-6 py-3 mb-2 border border-slate-600 rounded-lg font-medium "
             placeholder="Email"
-            value=""
+            name="email"
+            {...register("email", {
+              required: true,
+              pattern:
+                /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+            })}
           />
+          {errors.email && (
+            <span className="text-green-600 text-bold">Invalid email</span>
+          )}
           <input
             type="password"
             className="w-full px-6 py-3 mb-2 border border-slate-600 rounded-lg font-medium "
             placeholder="Password"
-            value=""
+            name="password"
+            {...register("password", {
+              required: true,
+            })}
           />
-          <input
-            type="password"
-            className="w-full px-6 py-3 mb-2 border border-slate-600 rounded-lg font-medium "
-            placeholder="Confirm password"
-            value=""
-          />
+
           <button className="bg-slate-500 hover:bg-slate-700 text-white text-base rounded-lg py-2.5 px-5 transition-colors w-full text-[19px]">
-            <span className="mr-2 uppercase">Login In</span>
+            <span className="mr-2 uppercase">Login</span>
           </button>
         </form>
         <p className="text-center mt-3 text-[14px]">

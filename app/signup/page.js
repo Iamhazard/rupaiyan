@@ -1,52 +1,39 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useDispatch, useSelector } from "react-redux";
-import Link from "next/link";
-import { SET_USER, selectIsAuthenticated } from "@/Redux/Features/authSlice";
 
-const Signup = () => {
+import { useRouter } from "next/navigation";
+
+import Link from "next/link";
+import { registerUser } from "@/services/authServices";
+import { useDispatch } from "react-redux";
+import { SET_LOGIN, SET_USER } from "@/Redux/Features/authSlice";
+
+const SignupAccount = () => {
   const [isloading, setisLoading] = useState(false);
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm();
   const Router = useRouter();
   const dispatch = useDispatch();
 
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-
-  useEffect(() => {
-    // If the user is already logged in, update the Redux state
-    if (isAuthenticated) {
-      Router.push("/");
-    }
-  }, [isAuthenticated, Router]);
-
-  const onSubmitRegister = async (data, e, user) => {
-    e.preventDefault();
-    console.log(data);
-    setisLoading(true);
+  const onSubmitRegister = async (data) => {
     try {
-      const result = await signIn("signUp", { ...data, callbackUrl: "/" });
+      setisLoading(true);
       if (data.password !== data.confirmPassword) {
-        alert("password confirmation doesnt match");
-      }
-      if (result?.ok) {
-        await dispatch(
-          SET_USER({ name: result?.user?.name, isAuthenticated: true })
-        );
+        alert("Password confirmation does not match!");
+      } else {
+        const formData = await registerUser(data);
+        await dispatch(SET_LOGIN(true));
+        await dispatch(SET_USER(formData));
+        console.log(formData);
         Router.push("/");
         setisLoading(false);
-        alert("registration sucessfull");
-      } else {
-        console.error("Signup failed");
-        setisLoading(false);
-        alert("An error occurred during registration.");
+        alert("Registration successful");
       }
     } catch (error) {
       setisLoading(false);
@@ -55,6 +42,31 @@ const Signup = () => {
     }
   };
 
+  // const onSubmitRegister = async (data) => {
+  //   setisLoading(true);
+  //   if (data.password !== data.confirmPassword) {
+  //     alert("Password confirmation does not match!");
+  //   }
+  //   try {
+  //     const res = await fetch("/api/register", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(data),
+  //     });
+
+  //     if (res.ok) {
+  //       const form = data;
+  //       reset();
+  //       Router.push("/");
+  //     } else {
+  //       console.log("User registration failed.");
+  //     }
+  //   } catch (error) {
+  //     console.log("Error during registration: ", error);
+  //   }
+  // };
   return (
     <div className="flex flex-col bg-white shadow-md px-4 sm:px-6 md:px-8 lg:px-10 py-8 rounded-3xl w-50 max-w-md">
       <div className="flex flex-col items-center mt-[5vh]">
@@ -83,7 +95,6 @@ const Signup = () => {
             name="username"
             {...register("username", {
               required: true,
-              pattern: /^[A-Za-z][A-Za-z\s]+$/,
             })}
           />
           {errors.username && (
@@ -141,4 +152,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default SignupAccount;

@@ -11,23 +11,17 @@ const UserSchema = new Schema(
         "Please enter valid email address",
       ],
     },
+    username: {
+      type: String,
+      required: [true, "Username is required!"],
+      unique: true,
+      minlength: 8,
+      maxlength: 20,
+    },
     password: {
       type: String,
       required: [true, "please add a Password"],
       minLength: [6, "Password must be upto 6 character"],
-    },
-    username: {
-      type: String,
-      required: [true, "Username is required!"],
-      match: [
-        /^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/,
-        "Username invalid, it should contain 8-20 alphanumeric letters and be unique!",
-      ],
-    },
-    image: {
-      type: String,
-      require: true,
-      default: "",
     },
   },
   {

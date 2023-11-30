@@ -4,7 +4,12 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   isLoggedIn: false,
-  user: null,
+  email: "",
+  username: "",
+  user: {
+    username: "",
+    email: "",
+  },
 };
 
 if (typeof window !== "undefined") {
@@ -17,17 +22,26 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    //for saving data
-    SET_USER: (state, action) => {
-      state.user.name = action.name;
-      state.isLoggedIn = !!action.payload;
+    SET_LOGIN(state, action) {
+      state.isLoggedIn = action.payload;
+    },
+    SET_LOGOUT(state) {
+      state.isLoggedIn = false;
+      state.username = "";
+      state.email = "";
+      state.user = { username: "", email: "" }; //reset user
+    }, //for saving data
+    SET_USER(state, action) {
+      const { username, email } = action.payload || {};
+      state.user = { username, email };
     },
   },
 });
 
-export const { SET_USER } = authSlice.actions;
+export const { SET_LOGIN, SET_LOGOUT, SET_USER } = authSlice.actions;
 
+export const selectIsLoggedIn = (state) => state.auth.isLoggedIn;
+export const selectName = (state) => state.auth.username;
 export const selectUser = (state) => state.auth.user;
-export const selectIsAuthenticated = (state) => state.auth.isLoggedIn;
 
 export default authSlice.reducer;

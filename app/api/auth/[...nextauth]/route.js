@@ -2,12 +2,13 @@ import NextAuth from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
 import { connectToDB } from "../../../../utils/database";
 import User from "../../../../models/user";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
+import CredentialsProvider from "next-auth/providers/credentials";
 
-console.log({
-  clientId: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-});
+// console.log({
+//   clientId: process.env.GOOGLE_CLIENT_ID,
+//   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+// });
 
 const handler = NextAuth({
   providers: [
@@ -16,9 +17,40 @@ const handler = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackUrl: "http://localhost:3000/api/auth/session/callback/google",
     }),
+
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {},
+      async authorize(credentials) {
+        const { email, password } = credentials;
+        try {
+          await connectToDB();
+          const user = await User.findOne({ email });
+
+          if (!user || !(await bcrypt.compare(password, user.password))) {
+            return null;
+          }
+
+          return {
+            id: user._id,
+            name: user.username,
+            email: user.email,
+          };
+        } catch (error) {
+          console.error("Error during authorization:", error);
+          console.log("Error: ", error);
+        }
+      },
+    }),
   ],
+  session: {
+    strategy: "database",
+  },
 
   callbacks: {
+    credentials: async (user) => {
+      return Promise.resolve(true);
+    },
     async session({ session }) {
       try {
         if (session.user && session.user.email) {
@@ -58,34 +90,11 @@ const handler = NextAuth({
         return false;
       }
     },
-    async signUp({ email, password, username }) {
-      // console.log("User Profile:", profile);
-      try {
-        await connectToDB().then(() => {
-          console.log(`connected to db ${process.env.MONGO_URI}`);
-        });
-        const userExists = await User.findOne({ email });
-        if (userExists) {
-          throw new Error("email is already use");
-        }
-
-        //hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-        //create newUser
-
-        const newUser = await User.create({
-          email,
-          password: hashedPassword,
-          username,
-        });
-        return Promise.resolve(true);
-      } catch (error) {
-        console.log(error);
-        return Promise.resolve(false);
-      }
-    },
   },
   secret: process.env.NEXTAUTH_SECRET,
+  pages: {
+    signIn: "/",
+  },
 });
 
 export { handler as GET, handler as POST };
