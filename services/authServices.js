@@ -1,5 +1,3 @@
-import { signIn } from "next-auth/react";
-
 //register
 export const registerUser = async (data) => {
   try {
@@ -26,23 +24,25 @@ export const registerUser = async (data) => {
 };
 
 //login
-
 export const loginUser = async (data) => {
-  //destructure email and password
-  const { email, password } = data;
   try {
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
+    const response = await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     });
-    if (res.error) {
-      alert("invalid Credentials");
-      return;
+
+    if (response.ok) {
+      alert("User login sucessfully");
+      return null;
     } else {
-      alert("Login successful");
+      const errorMessage = await response.text();
+      alert(`Error: ${errorMessage}`);
     }
   } catch (error) {
-    console.error("Error during login:", error);
+    const message = console.error("Error:", error);
+    alert("An error occurred. Please try again.");
   }
 };

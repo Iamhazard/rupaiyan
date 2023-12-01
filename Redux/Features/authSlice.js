@@ -1,6 +1,34 @@
 "use Client";
 
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { signIn } from "next-auth/react";
+
+export const loginUser = createAsyncThunk(
+  "auth/loginUser",
+  async (userFormData, { rejectWithValue }) => {
+    try {
+      const response = await signIn("credentials", {
+        email: userFormData.email,
+        password: userFormData.password,
+        redirect: false, // Set redirect to false to handle redirection manually
+      });
+      console.log("Full response:", response);
+      console.log("Error details:", response?.error);
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      //if signSucessfull you can return user data
+      const userData = response?.data;
+
+      return userData;
+    } catch (error) {
+      console.error("Login failed:", error);
+      // Use rejectWithValue to provide error details to the rejection action
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 const initialState = {
   isLoggedIn: false,
@@ -35,6 +63,18 @@ const authSlice = createSlice({
       const { username, email } = action.payload || {};
       state.user = { username, email };
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(loginUser.fulfilled, (state, action) => {
+      const { username, email } = action.payload;
+      state.isLoggedIn = true;
+      state.username = username;
+      state.email = email;
+      state.user = { username, email };
+    });
+    builder.addCase(loginUser.rejected, (state, action) => {
+      console.error("Login failed:", action.payload);
+    });
   },
 });
 

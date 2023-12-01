@@ -5,12 +5,29 @@ import Image from "next/image";
 import Link from "next/link";
 import Button from "./Button";
 import { useState } from "react";
+import { signOut, useSession } from "next-auth/react";
+import { useDispatch } from "react-redux";
+import { SET_LOGOUT } from "@/Redux/Features/authSlice";
 
 const Navbar = () => {
   const [dropDownMenu, setDropDownMenu] = useState(false);
-
+  const dispatch = useDispatch();
   const handleToggleDropdown = () => {
     setDropDownMenu(!dropDownMenu);
+  };
+  const { data: session } = useSession();
+
+  const handleLogout = async () => {
+    console.log("handleLogout function called");
+    try {
+      console.log("Before signOut");
+      await signOut({ redirect: false });
+      console.log("After signOut");
+      dispatch(SET_LOGOUT());
+      console.log("logout sucessfull");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (
@@ -30,14 +47,24 @@ const Navbar = () => {
         ))}
       </ul>
       <div className="lg:flexCenter hidden">
-        <Link href="/login">
+        {!session?.user ? (
+          <Link href="/login">
+            <Button
+              type="button"
+              title="Login"
+              icon="/assets/Svg/user.svg"
+              variant="btn_dark_green"
+            />
+          </Link>
+        ) : (
           <Button
+            onClick={handleLogout}
             type="button"
-            title="Login"
+            title="Logout"
             icon="/assets/Svg/user.svg"
             variant="btn_dark_green"
           />
-        </Link>
+        )}
       </div>
       {/* Updated button structure */}
       <button
@@ -99,11 +126,24 @@ const Navbar = () => {
             </div>
             <div className="mt-auto">
               <div className="pt-6">
-                <Link
-                  className="block px-4 py-3 mb-3 text-xs text-center font-semibold leading-none bg-blue-600 hover:bg-gray-100 rounded-xl"
-                  href="/login">
-                  Login
-                </Link>
+                {!session?.user ? (
+                  <Link href="/login">
+                    <Button
+                      type="button"
+                      title="Logout"
+                      icon="/assets/Svg/user.svg"
+                      variant="btn_dark_green"
+                    />
+                  </Link>
+                ) : (
+                  <Button
+                    onClick={signOut}
+                    type="button"
+                    title="Logout"
+                    icon="/assets/Svg/user.svg"
+                    variant="btn_dark_green"
+                  />
+                )}
               </div>
               <p className="my-4 text-xs text-center text-gray-400">
                 <span>Copyright © 2023</span>

@@ -1,65 +1,68 @@
+import User from "@/models/user";
 import NextAuth from "next-auth/next";
-import GoogleProvider from "next-auth/providers/google";
-import { connectToDB } from "../../../../utils/database";
-import User from "../../../../models/user";
-import bcrypt from "bcryptjs";
 import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { connectToDB } from "@/utils/database";
+import GoogleProvider from "next-auth/providers/google";
 
-// console.log({
-//   clientId: process.env.GOOGLE_CLIENT_ID,
-//   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-// });
+const generateRandomPassword = () => {
+  const length = 12; // Adjust the length of the password as needed
+  const saltRounds = 10;
 
-const handler = NextAuth({
+  // Generate a random string
+  const randomString = Math.random().toString(36).slice(2);
+
+  // Hash the random string using bcrypt
+  const hashedPassword = bcrypt.hashSync(randomString, saltRounds);
+
+  return hashedPassword;
+};
+const authOptions = {
   providers: [
+    CredentialsProvider({
+      // The name to display on the sign in form (e.g. "Sign in with...")
+      name: "Credentials",
+
+      credentials: {},
+      async authorize(credentials, req) {
+        const { email, password } = credentials;
+        console.log("Credentials:", credentials);
+        try {
+          await connectToDB();
+          const user = await User.findOne({ email: credentials.email });
+          if (user) {
+            const isPasswordCorrect = await bcrypt.compare(
+              credentials.password,
+              user.password
+            );
+            if (isPasswordCorrect) {
+              return Promise.resolve(user);
+            }
+          }
+        } catch (error) {
+          console.error("Error during authorization:", error);
+          throw new Error("CredentialsSignin");
+        }
+
+        return Promise.resolve(null);
+      },
+    }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackUrl: "http://localhost:3000/api/auth/session/callback/google",
     }),
-
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {},
-      async authorize(credentials) {
-        const { email, password } = credentials;
-        try {
-          await connectToDB();
-          const user = await User.findOne({ email });
-
-          if (!user || !(await bcrypt.compare(password, user.password))) {
-            return null;
-          }
-
-          return {
-            id: user._id,
-            name: user.username,
-            email: user.email,
-          };
-        } catch (error) {
-          console.error("Error during authorization:", error);
-          console.log("Error: ", error);
-        }
-      },
-    }),
   ],
-  session: {
-    strategy: "database",
-  },
 
   callbacks: {
-    credentials: async (user) => {
-      return Promise.resolve(true);
-    },
     async session({ session }) {
       try {
+        console.log("Session Data:", session);
+
         if (session.user && session.user.email) {
-          const sessionUser = await User.findOne(
-            {
-              email: session.user.email,
-            },
-            { maxTimeMS: 20000 }
-          );
+          const sessionUser = await User.findOne({
+            email: session.user.email,
+          });
           if (sessionUser) {
             session.user.id = sessionUser._id.toString();
           }
@@ -69,32 +72,40 @@ const handler = NextAuth({
         console.error("Database query error:", error);
       }
     },
-    async signIn({ profile, account, user, credentials }) {
-      // console.log("User Profile:", profile);
-      try {
-        await connectToDB().then(() => {
-          console.log(`connected to db ${process.env.MONGO_URI}`);
-        });
-        const userExists = await User.findOne({ email: profile.email });
-
-        if (!userExists) {
-          await User.create({
-            email: profile.email,
-            username: profile.name.replace(" ", "").toLowerCase(),
-            image: profile.picture,
-          });
-        }
+    async signIn({ account, user, credentials }) {
+      if (account?.provider == "credentials") {
         return true;
-      } catch (error) {
-        console.log(error);
-        return false;
+      }
+      if (account?.provider == "google") {
+        console.log("user account", account);
+        console.log("user ", user);
+
+        await connectToDB();
+        try {
+          const existingUser = await User.findOne({ email: user.email });
+
+          if (!existingUser) {
+            const randomPassword = generateRandomPassword();
+            await User.create({
+              email: user.email,
+              username: user.name.replace(" ", "").toLowerCase(),
+              password: randomPassword,
+            });
+          }
+
+          return true;
+        } catch (error) {
+          console.error("Error during signIn callback:", error);
+          return false;
+        }
       }
     },
   },
+
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
-    signIn: "/",
+    signIn: "/app/login",
   },
-});
-
+};
+export const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

@@ -76,11 +76,6 @@ body {
   }
 }
 @layer utilities {
-  .bg-pattern-2 {
-     
-      background-image: url('/public/assets/Svg/pattern.png');
-      
-    }
   
   .btn_white {
     @apply border-white bg-white px-8 py-3 text-green-50
@@ -212,7 +207,7 @@ body {
   }
 
     .feed-image {
-    @apply absolute right-0 top-0 h-screen w-screen bg-pattern-2 bg-cover bg-center md:-right-28 xl:-top-60;
+    @apply absolute right-0 top-0 h-screen w-screen bg-cover bg-center md:-right-28 xl:-top-60;
     }
   
   

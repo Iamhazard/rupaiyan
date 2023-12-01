@@ -1,12 +1,11 @@
 "use client";
 
 import { SET_LOGIN, SET_USER } from "@/Redux/Features/authSlice";
-import { loginUser } from "@/services/authServices";
-import { signIn } from "next-auth/react";
+import { signIn, useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const Login = () => {
   const [isloading, setisLoading] = useState(false);
@@ -19,50 +18,55 @@ const Login = () => {
   } = useForm();
   const dispatch = useDispatch();
   const router = useRouter();
-  // const onSubmitLogin = async (data) => {
-  //   try {
-  //     setisLoading(true);
-  //     if (!data.email || !data.password) {
-  //       alert("All fields are required");
-  //     } else {
-  //       const formData = await loginUser(data);
-  //       console.log(formData);
-  //       await dispatch(SET_LOGIN(true));
-  //       await dispatch(SET_USER(formData));
-  //       router.push("/");
-  //       setisLoading(false);
-  //       alert("Login successful");
-  //     }
-  //   } catch (error) {
-  //     setisLoading(false);
-  //     console.error(error);
-  //     alert("An error occurred during Login.");
-  //   }
-  // };
+  const session = useSession();
+
+  useEffect(() => {
+    if (session?.status === "authenticated") {
+      router.replace("/");
+    }
+  }, [session, router]);
 
   const onSubmitLogin = async (data) => {
     try {
-      const res = await signIn("credentials", {
-        data,
-        redirect: false,
-      });
-      if (res.error) {
-        setError("Invalid Credentials");
-        return;
+      setisLoading(true);
+      if (!data.email || !data.password) {
+        alert("All fields are required");
+      } else {
+        const response = await signIn("credentials", {
+          redirect: false,
+          email: data.email,
+          password: data.password,
+        });
+
+        console.log("Received response:", response);
+
+        if (response.error) {
+          setError("Invalid Credentials");
+          return;
+        }
+
+        dispatch(SET_LOGIN(true));
+        dispatch(SET_USER(response.data));
+
+        alert("Login successful");
+        console.log(" Login successful");
       }
-      router.push("/");
     } catch (error) {
-      console.error("Error during login:", error);
-      setError("An unexpected error occurred. Please try again.");
+      setisLoading(false);
+      console.error(error);
+      alert("An error occurred during Login.");
     }
   };
+
   return (
     <div className="flex flex-col bg-white shadow-md px-4 sm:px-6 md:px-8 lg:px-10 py-8 rounded-3xl w-50 max-w-md">
       <div className="flex flex-col items-center mt-[5vh]">
         <h2 className="mb-5 text-gray-900 font-mono font-bold text-xl">
           Sign Up
         </h2>
-        <button className="flex items-center mb-2 justify-center transition ease-in-out delay-50 px-3 py-2.5 space-x-2 bg-white border border-slate-600 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 focus:ring-opacity-50">
+        <button
+          className="flex items-center mb-2 justify-center transition ease-in-out delay-50 px-3 py-2.5 space-x-2 bg-white border border-slate-600 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 focus:ring-opacity-50"
+          onClick={signIn("google")}>
           <div>
             <svg
               viewBox="0 0 48 48"
@@ -123,7 +127,8 @@ const Login = () => {
         <span className="mb-2 text-gray-900">Or</span>
         <form
           onSubmit={handleSubmit(onSubmitLogin)}
-          action={"/api/auth/callback/credentials"}>
+          action="/api/auth/callback/credentials"
+          method="post">
           <input
             type="text"
             className="w-full px-6 py-3 mb-2 border border-slate-600 rounded-lg font-medium "
