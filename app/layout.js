@@ -27,7 +27,7 @@ export default async function RcoootLayout({ children }) {
             </div>
 
             <Navbar />
-            <main className="z-10 flex justify-center items-center flex-col max-w-80 mx-auto sm:px-16 px-6">
+            <main className="flex justify-center items-center flex-col max-w-full mx-auto sm:px-16 px-6">
               {children}
             </main>
           </NextAuthProvider>

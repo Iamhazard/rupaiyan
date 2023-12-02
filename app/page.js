@@ -2,9 +2,9 @@ import Feed from "@/components/Feed";
 
 const Home = () => {
   return (
-    <section>
+    <main>
       <Feed />
-    </section>
+    </main>
   );
 };
 
