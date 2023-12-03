@@ -2,7 +2,7 @@
 export const NAV_LINKS = [
   { href: "/", key: "home", label: "Home" },
   { href: "/", key: "how_Rupaiyan_work", label: "How Rupaiyan Work?" },
-  { href: "/", key: "Report", label: "Report" },
+  { href: "/stats", key: "Report", label: "Report" },
   { href: "/", key: "Calculator", label: "Calculator" },
 ];
 
