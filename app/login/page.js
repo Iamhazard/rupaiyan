@@ -33,7 +33,7 @@ const Login = () => {
         alert("All fields are required");
       } else {
         const response = await signIn("credentials", {
-          redirect: false,
+          redirect: true,
           email: data.email,
           password: data.password,
         });
@@ -47,7 +47,7 @@ const Login = () => {
 
         dispatch(SET_LOGIN(true));
         dispatch(SET_USER(response.data));
-
+        router.push("/");
         alert("Login successful");
         console.log(" Login successful");
       }
@@ -66,7 +66,7 @@ const Login = () => {
         </h2>
         <button
           className="flex items-center mb-2 justify-center transition ease-in-out delay-50 px-3 py-2.5 space-x-2 bg-white border border-slate-600 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-600 focus:ring-opacity-50"
-          onClick={signIn("google")}>
+          onClick={() => signIn("google")}>
           <div>
             <svg
               viewBox="0 0 48 48"

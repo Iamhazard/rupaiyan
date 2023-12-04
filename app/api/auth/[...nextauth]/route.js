@@ -57,28 +57,29 @@ const authOptions = {
   callbacks: {
     callbacks: {
       async session({ session }) {
-        try {
-          if (session.user && session.user.email) {
-            const sessionUser = await User.findOne({
-              email: session.user.email,
-            }).maxTimeMS(30000);
-            if (sessionUser) {
-              session.user.id = sessionUser._id.toString();
+        if (typeof window !== "undefined") {
+          try {
+            if (session.user && session.user.email) {
+              const sessionUser = await User.findOne({
+                email: session.user.email,
+              }).maxTimeMS(30000);
+              if (sessionUser) {
+                session.user.id = sessionUser._id.toString();
+              }
+            }
+            return session;
+          } catch (error) {
+            if (
+              error.name === "MongooseError" &&
+              error.message.includes("buffering timed out")
+            ) {
+              console.error("Retrying findOne operation...");
+            } else {
+              console.error("Database query error:", error);
             }
           }
-          return session;
-        } catch (error) {
-          if (
-            error.name === "MongooseError" &&
-            error.message.includes("buffering timed out")
-          ) {
-            // Retry the operation
-            console.error("Retrying findOne operation...");
-            // Call the findOne operation again
-          } else {
-            console.error("Database query error:", error);
-          }
         }
+        return session;
       },
     },
 

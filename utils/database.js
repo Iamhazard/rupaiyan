@@ -15,7 +15,7 @@ export const connectToDB = async () => {
       dbName: "Rupya",
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      poolSize: 10,
+      wtimeoutMS: 2500,
     });
     isConnected = true;
     console.log("MongoDb connected");

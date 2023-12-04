@@ -1,66 +1,38 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { useForm, Controller } from "react-hook-form";
+import { addIncomeAsync } from "@/Redux/Features/incomeSlice";
 
 const CreateForm = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    date: "",
-    amount: "",
-    category: "",
-    desc: "",
-  });
-
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm();
+  const dispatch = useDispatch();
   const navigateToHome = () => {
     router.push("/");
   };
   const params = useSearchParams();
   const type = params.get("type");
 
-  const [errors, setErrors] = useState({});
-
-  const validateForm = () => {
-    let isValid = true;
-    const newErrors = {};
-
-    if (!formData.date) {
-      newErrors.date = "Date is required";
-      isValid = false;
-    }
-
-    if (!formData.amount) {
-      newErrors.amount = "Amount is required";
-      isValid = false;
-    }
-
-    if (!formData.category) {
-      newErrors.category = "Category is required";
-      isValid = false;
-    }
-
-    if (!formData.notes) {
-      newErrors.notes = "Notes are required";
-      isValid = false;
-    }
-
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const handleSubmit = (e) => {
+  const handleIncome = async (data, e) => {
     e.preventDefault();
 
-    if (validateForm()) {
-      console.log("Form submitted:", formData);
-    } else {
-      console.log("Form has validation errors");
-    }
-  };
+    const formData = new FormData();
+    formData.append("incomedate", data.date);
+    formData.append("name", data.name);
+    formData.append("amount", data.amount);
+    formData.append("category", data.category);
+    formData.append("notes", data.notes);
+    console.log(...formData);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: "" });
+    await dispatch(addIncomeAsync(formData));
+    router.push("/");
   };
 
   return (
@@ -90,26 +62,55 @@ const CreateForm = () => {
               />
             </svg>
           </button>
-          <form className="mt-10" onSubmit={handleSubmit}>
+          <form className="mt-10" onSubmit={handleSubmit(handleIncome)}>
             <div>
-              <input
-                defaultValue={formData.date}
-                type="date"
-                placeholder="Date"
-                onChange={handleChange}
-                className="mt-1 block w-full border-none bg-gray-100 h-12 rounded-xl shadow-lg hover:bg-blue-100 focus:bg-blue-100 focus:ring-0"
+              <Controller
+                name="date"
+                control={control}
+                rules={{ required: "Date is required" }}
+                render={({ field }) => (
+                  <input
+                    type="date"
+                    placeholder="Date"
+                    {...field}
+                    className="mt-1 block w-full border-none bg-gray-100 h-12 rounded-xl shadow-lg hover:bg-blue-100 focus:bg-blue-100 focus:ring-0"
+                  />
+                )}
               />
+
               {errors.date && (
-                <p className="text-red-500 text-sm mt-1">{errors.date}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.date.message}
+                </p>
               )}
             </div>
             <div className="mt-7">
               <input
-                defaultValue={formData.amount}
-                onChange={handleChange}
+                type="text"
+                placeholder="Enter a Income name"
+                name="name"
+                {...register("name", {
+                  required: true,
+                  pattern: /^[A-Za-z][A-Za-z\s]+$/,
+                })}
+                className="mt-1 block w-full border-none bg-gray-100 h-12 rounded-xl shadow-lg hover:bg-blue-100 focus:bg-blue-100 focus:ring-0"
+              />
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              )}
+            </div>
+            <div className="mt-7">
+              <input
                 type="number"
                 placeholder="Amount"
-                pattern="/^\d+$/"
+                name="amount"
+                {...register("amount", {
+                  required: "amount is required",
+                  pattern: {
+                    value: /^[0-9]+(\.[0-9]{1,2})?$/, // Regular expression for price format (e.g., 12.34)
+                    message: "Invalid Amount format",
+                  },
+                })}
                 className="mt-1 block w-full border-none bg-gray-100 h-12 rounded-xl shadow-lg hover:bg-blue-100 focus:bg-blue-100 focus:ring-0"
               />
               {errors.amount && (
@@ -119,9 +120,13 @@ const CreateForm = () => {
 
             <div className="mt-7">
               <input
-                defaultValue={formData.category}
                 type="text"
                 placeholder="Category"
+                name="category"
+                {...register("category", {
+                  required: true,
+                  pattern: /^[A-Za-z][A-Za-z\s]+$/,
+                })}
                 className="mt-1 block w-full border-none bg-gray-100 h-12 rounded-xl shadow-lg hover:bg-blue-100 focus:bg-blue-100 focus:ring-0"
               />
               {errors.category && (
@@ -131,10 +136,13 @@ const CreateForm = () => {
 
             <div className="mt-7">
               <textarea
-                defaultValue={formData.desc}
-                onChange={handleChange}
+                name="notes"
                 type="text"
                 placeholder="notes"
+                {...register("notes", {
+                  required: true,
+                  minLength: 2,
+                })}
                 className="block p-2.5 text-sm text-gray-900 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 mt-1 w-full border-none bg-gray-100 h-32 rounded-xl shadow-lg hover:bg-blue-100 focus:bg-blue-100 focus:ring-0"
               />
               {errors.notes && (

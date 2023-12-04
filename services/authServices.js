@@ -46,3 +46,28 @@ export const loginUser = async (data) => {
     alert("An error occurred. Please try again.");
   }
 };
+
+//create Income
+
+export const createIncome = async (data) => {
+  try {
+    const response = await fetch("/api/income", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (response.ok) {
+      alert("Incoem added  sucessfully");
+      return null;
+    } else {
+      const errorMessage = await response.text();
+      alert(`Error: ${errorMessage}`);
+    }
+  } catch (error) {
+    const message = console.error("Error:", error);
+    alert("An error occurred. Please try again.");
+  }
+};

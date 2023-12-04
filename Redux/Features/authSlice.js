@@ -10,7 +10,7 @@ export const loginUser = createAsyncThunk(
       const response = await signIn("credentials", {
         email: userFormData.email,
         password: userFormData.password,
-        redirect: false, // Set redirect to false to handle redirection manually
+        redirect: false,
       });
       console.log("Full response:", response);
       console.log("Error details:", response?.error);
@@ -24,7 +24,7 @@ export const loginUser = createAsyncThunk(
       return userData;
     } catch (error) {
       console.error("Login failed:", error);
-      // Use rejectWithValue to provide error details to the rejection action
+
       return rejectWithValue(error.message);
     }
   }
@@ -39,12 +39,6 @@ const initialState = {
     email: "",
   },
 };
-
-if (typeof window !== "undefined") {
-  // Check if running on the client side
-  const name = JSON.parse(localStorage.getItem("name"));
-  initialState.name = name ? name : "";
-}
 
 const authSlice = createSlice({
   name: "auth",
