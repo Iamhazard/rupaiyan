@@ -20,19 +20,36 @@ const CreateForm = () => {
   const params = useSearchParams();
   const type = params.get("type");
 
-  const handleIncome = async (data, e) => {
-    e.preventDefault();
+  // const handleIncome = async (data, e) => {
+  //   e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("incomedate", data.date);
-    formData.append("name", data.name);
-    formData.append("amount", data.amount);
-    formData.append("category", data.category);
-    formData.append("notes", data.notes);
-    console.log(...formData);
+  //   const formData = new FormData();
+  //   formData.append("incomedate", data.date);
+  //   formData.append("name", data.name);
+  //   formData.append("amount", data.amount);
+  //   formData.append("category", data.category);
+  //   formData.append("notes", data.notes);
+  //   console.log(...formData);
 
-    await dispatch(addIncomeAsync(formData));
-    router.push("/");
+  //   await dispatch(addIncomeAsync(formData));
+  //   router.push("/");
+  // };
+
+  const handleIncome = async (data) => {
+    try {
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("category", data.category);
+      formData.append("amount", data.amount);
+      formData.append("notes", data.notes);
+
+      console.log(...formData);
+      const res = await dispatch(addIncomeAsync(formData));
+      console.log(res);
+    } catch (error) {
+      console.error("Error adding income:", error);
+      console.log("Response:", error.response);
+    }
   };
 
   return (
@@ -63,27 +80,6 @@ const CreateForm = () => {
             </svg>
           </button>
           <form className="mt-10" onSubmit={handleSubmit(handleIncome)}>
-            <div>
-              <Controller
-                name="date"
-                control={control}
-                rules={{ required: "Date is required" }}
-                render={({ field }) => (
-                  <input
-                    type="date"
-                    placeholder="Date"
-                    {...field}
-                    className="mt-1 block w-full border-none bg-gray-100 h-12 rounded-xl shadow-lg hover:bg-blue-100 focus:bg-blue-100 focus:ring-0"
-                  />
-                )}
-              />
-
-              {errors.date && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.date.message}
-                </p>
-              )}
-            </div>
             <div className="mt-7">
               <input
                 type="text"

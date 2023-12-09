@@ -23,13 +23,6 @@ const IncomeSchema = new Schema(
     notes: {
       type: String,
     },
-    incomedate: {
-      type: String,
-      match: [
-        /^\d{4}-\d{2}-\d{2}$/,
-        "Please enter a valid date format (YYYY-MM-DD)",
-      ],
-    },
   },
   {
     timestamps: true,
