@@ -12,13 +12,13 @@ const Card = () => {
   const handleIncomeClick = (e) => {
     e.preventDefault();
     console.log("Clicked Income");
-    router.push("/form?type=income");
+    router.push("/form?type=Income");
   };
 
   const handleExpenseClick = (e) => {
     e.preventDefault();
     console.log("Clicked Expense");
-    router.push("/form?type=expense");
+    router.push("/form?type=Expense");
   };
 
   return (

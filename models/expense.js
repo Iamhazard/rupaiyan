@@ -1,9 +1,9 @@
 import mongoose, { Schema, model, models } from "mongoose";
 
-const IncomeSchema = new Schema(
+const ExpenseSchema = new Schema(
   {
     creator: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
     },
     name: {
@@ -25,5 +25,5 @@ const IncomeSchema = new Schema(
   }
 );
 
-const Income = models.Income || model("Income", IncomeSchema);
-export default Income;
+const Expense = models.Expense || model("Expense", ExpenseSchema);
+export default Expense;

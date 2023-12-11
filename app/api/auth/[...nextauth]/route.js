@@ -4,6 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { connectToDB } from "@/utils/database";
 import GoogleProvider from "next-auth/providers/google";
+import { use } from "react";
 
 const generateRandomPassword = () => {
   const length = 12; // Adjust the length of the password as needed
@@ -36,6 +37,7 @@ const authOptions = {
               user.password
             );
             if (isPasswordCorrect) {
+              console.log("Authorized User:", user);
               return Promise.resolve(user);
             }
           }
@@ -50,51 +52,44 @@ const authOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackUrl: "http://localhost:3000/api/auth/session/callback/google",
+      callbackUrl: "http://localhost:3000/api/auth/callback/google",
     }),
   ],
 
   callbacks: {
-    callbacks: {
-      async session({ session }) {
-        if (typeof window !== "undefined") {
-          try {
-            if (session.user && session.user.email) {
-              const sessionUser = await User.findOne({
-                email: session.user.email,
-              }).maxTimeMS(30000);
-              if (sessionUser) {
-                session.user.id = sessionUser._id.toString();
-              }
-            }
-            return session;
-          } catch (error) {
-            if (
-              error.name === "MongooseError" &&
-              error.message.includes("buffering timed out")
-            ) {
-              console.error("Retrying findOne operation...");
-            } else {
-              console.error("Database query error:", error);
-            }
+    async session({ session }) {
+      try {
+        if (session.user && session.user.email) {
+          const sessionUser = await User.findOne({
+            email: session.user.email,
+          }).maxTimeMS(30000);
+
+          if (sessionUser) {
+            session.user.id = sessionUser._id.toString();
           }
         }
         return session;
-      },
+      } catch (error) {
+        if (
+          error.name === "MongooseError" &&
+          error.message.includes("buffering timed out")
+        ) {
+          console.error("Retrying findOne operation...");
+        } else {
+          console.error("Database query error:", error);
+        }
+      }
     },
-
-    async signIn({ account, user, credentials }) {
+    async signIn({ account, user, profile, credentials }) {
       if (account?.provider == "credentials") {
         return true;
       }
       if (account?.provider == "google") {
-        console.log("user account", account);
-        console.log("user ", user);
-
         await connectToDB();
         try {
           const existingUser = await User.findOne({ email: user.email });
 
+          // console.log("Google user:", user);
           if (!existingUser) {
             const randomPassword = generateRandomPassword();
             await User.create({
@@ -102,12 +97,13 @@ const authOptions = {
               username: user.name.replace(" ", "").toLowerCase(),
               password: randomPassword,
             });
+            user.id = existingUser._id.toString();
           }
 
           return true;
         } catch (error) {
           console.error("Error during signIn callback:", error);
-          return false;
+          return Promise.resolve(true);
         }
       }
     },

@@ -2,17 +2,21 @@
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch } from "react-redux";
-import { useForm, Controller } from "react-hook-form";
-import { addIncomeAsync } from "@/Redux/Features/incomeSlice";
+import { useForm } from "react-hook-form";
+import { fetchIncome } from "@/Redux/Features/incomeSlice";
+import { fetchExpense } from "@/Redux/Features/expenseSlice";
+import { useSession } from "next-auth/react";
 
 const CreateForm = () => {
   const router = useRouter();
   const {
     register,
     handleSubmit,
-    control,
+
     formState: { errors },
   } = useForm();
+  const { data: session } = useSession();
+  // console.log("Session:", session);
   const dispatch = useDispatch();
   const navigateToHome = () => {
     router.push("/");
@@ -20,35 +24,25 @@ const CreateForm = () => {
   const params = useSearchParams();
   const type = params.get("type");
 
-  // const handleIncome = async (data, e) => {
-  //   e.preventDefault();
-
-  //   const formData = new FormData();
-  //   formData.append("incomedate", data.date);
-  //   formData.append("name", data.name);
-  //   formData.append("amount", data.amount);
-  //   formData.append("category", data.category);
-  //   formData.append("notes", data.notes);
-  //   console.log(...formData);
-
-  //   await dispatch(addIncomeAsync(formData));
-  //   router.push("/");
-  // };
+  console.log("t", type);
 
   const handleIncome = async (data) => {
-    try {
-      const formData = new FormData();
-      formData.append("name", data.name);
-      formData.append("category", data.category);
-      formData.append("amount", data.amount);
-      formData.append("notes", data.notes);
+    const userId = session?.user.id;
 
-      console.log(...formData);
-      const res = await dispatch(addIncomeAsync(formData));
-      console.log(res);
+    try {
+      let action;
+
+      if (type === "income") {
+        action = fetchIncome({ ...data, userId });
+      } else {
+        action = fetchExpense({ ...data, userId });
+      }
+
+      const resultAction = await dispatch(action);
+      router.push("/");
+      return resultAction;
     } catch (error) {
-      console.error("Error adding income:", error);
-      console.log("Response:", error.response);
+      console.log(error);
     }
   };
 
@@ -83,7 +77,7 @@ const CreateForm = () => {
             <div className="mt-7">
               <input
                 type="text"
-                placeholder="Enter a Income name"
+                placeholder={`Enter a ${type} name`}
                 name="name"
                 {...register("name", {
                   required: true,

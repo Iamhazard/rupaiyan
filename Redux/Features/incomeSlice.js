@@ -1,20 +1,13 @@
 import incomeServices from "@/services/incomeServices";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-const initialState = {
-  income: null,
-  incomes: [],
-  isError: false,
-  isSuccess: false,
-  isLoading: false,
-  message: "",
-};
-
-export const addIncomeAsync = createAsyncThunk(
-  "incomes/addIncome",
-  async (formData, thunkAPI) => {
+export const fetchIncome = createAsyncThunk(
+  "income/fetchIncome",
+  async (data, thunkAPI) => {
+    console.log(" from income slice", data);
     try {
-      return await incomeServices.createIncome(formData);
+      const response = await incomeServices.createIncome(data);
+      return response.data;
     } catch (error) {
       const message =
         (error.response &&
@@ -33,30 +26,31 @@ export const addIncomeAsync = createAsyncThunk(
 
 const incomeSlice = createSlice({
   name: "income",
-  initialState,
-  reducers: {},
+  initialState: {
+    data: [],
+    status: "idle",
+    error: null,
+  },
+  reducers: {
+    setUserId: (state, action) => {
+      state.userId = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
-      .addCase(addIncomeAsync.pending, (state) => {
-        state.isLoading = true;
+      .addCase(fetchIncome.pending, (state) => {
+        state.status = "loading";
       })
-      .addCase(addIncomeAsync.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.isSuccess = true;
-        state.isError = false;
-
-        console.log(action.payload);
-
-        state.incomes.push(action.payload);
+      .addCase(fetchIncome.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.data = action.payload;
       })
-      .addCase(addIncomeAsync.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
-        state.message = action.payload.error;
-        alert("error while adding Income");
-        console.error("Error while adding Income:", action);
+      .addCase(fetchIncome.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
       });
   },
 });
+export const { setUserId } = incomeSlice.actions;
 
 export default incomeSlice.reducer;
