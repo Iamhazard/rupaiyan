@@ -5,11 +5,11 @@ import { signIn } from "next-auth/react";
 
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async (userFormData, { rejectWithValue }) => {
+  async (session, { rejectWithValue }) => {
     try {
       const response = await signIn("credentials", {
-        email: userFormData.email,
-        password: userFormData.password,
+        email: session.email,
+        password: session.password,
         redirect: false,
       });
       console.log("Full response:", response);

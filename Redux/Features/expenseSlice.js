@@ -1,6 +1,5 @@
 import incomeServices from "@/services/incomeServices";
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { data } from "autoprefixer";
 
 export const fetchExpense = createAsyncThunk(
   "expense/fetchExpense",
@@ -31,8 +30,9 @@ export const fetchExpenses = createAsyncThunk(
   "expense/fetchExpenses",
   async (_, thunkAPI) => {
     try {
-      const response = await incomeServices.getExpenses();
-      return response.data;
+      const response = await incomeServices.getAllExpenses();
+      console.log("API response:", response);
+      return response;
     } catch (error) {
       const message =
         (error.response &&
@@ -41,6 +41,7 @@ export const fetchExpenses = createAsyncThunk(
         error.message ||
         error.toString();
       console.log(message);
+      console.log(error);
       return thunkAPI.rejectWithValue({
         error: "Failed to get all expenses",
         details: error.response?.data,
@@ -52,7 +53,7 @@ export const fetchExpenses = createAsyncThunk(
 const expenseSlice = createSlice({
   name: "expense",
   initialState: {
-    expense: null,
+    expense: [],
     expenses: [],
     status: "idle",
     error: null,
@@ -60,6 +61,7 @@ const expenseSlice = createSlice({
   reducers: {
     setUserId: (state, action) => {
       state.userId = action.payload;
+      console.log(state.userId);
     },
   },
   extraReducers: (builder) => {
@@ -81,8 +83,9 @@ const expenseSlice = createSlice({
     builder.addCase(fetchExpenses.fulfilled, (state, action) => {
       state.status = "succeeded";
       state.expenses = action.payload;
+      console.log("Action Payload:", action.payload);
     });
-    builder.addCase(fetchExpenses.rejected, (state) => {
+    builder.addCase(fetchExpenses.rejected, (state, action) => {
       state.status = "failed";
       state.error = action.error.message;
     });

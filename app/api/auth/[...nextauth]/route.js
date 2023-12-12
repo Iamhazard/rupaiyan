@@ -63,7 +63,7 @@ const authOptions = {
           const sessionUser = await User.findOne({
             email: session.user.email,
           }).maxTimeMS(30000);
-
+          // console.log("logged in user", sessionUser);
           if (sessionUser) {
             session.user.id = sessionUser._id.toString();
           }
@@ -74,7 +74,6 @@ const authOptions = {
           error.name === "MongooseError" &&
           error.message.includes("buffering timed out")
         ) {
-          console.error("Retrying findOne operation...");
         } else {
           console.error("Database query error:", error);
         }

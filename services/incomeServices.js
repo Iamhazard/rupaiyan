@@ -1,5 +1,6 @@
 //create new income
 
+import { headers } from "@/next.config";
 import axios from "axios";
 
 const createIncome = async (data) => {
@@ -19,15 +20,31 @@ const createExpense = async (data) => {
 
 //get expenes
 
-const getExpenses = async () => {
-  const response = await axios.get("/api/expense");
-  console.log(response);
-  return response.data;
+const getAllExpenses = async () => {
+  try {
+    const response = await fetch("/api/expense", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    console.log("api response from services", response);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    return responseData;
+  } catch (error) {
+    console.error("Error fetching expenses:", error);
+    throw error;
+  }
 };
 
 const incomeServices = {
   createIncome,
   createExpense,
-  getExpenses,
+  getAllExpenses,
 };
 export default incomeServices;

@@ -3,6 +3,9 @@ import React, { useEffect, useState } from "react";
 import { IoAddCircle } from "react-icons/io5";
 import currencyUtils from "@/utils/currencyUtils";
 import { useDispatch, useSelector } from "react-redux";
+// import { fetchExpenses } from "@/Redux/Features/expenseSlice";
+// import { selectIsLoggedIn } from "@/Redux/Features/authSlice";
+import { useSession } from "next-auth/react";
 import { fetchExpenses } from "@/Redux/Features/expenseSlice";
 
 const formatDate = (dateString) => {
@@ -16,16 +19,20 @@ const formatDate = (dateString) => {
 
 const ExpenseItems = () => {
   const dispatch = useDispatch();
-  const [expenses, setExpenses] = useState([]);
+  //const isLoggedIn = useSelector(selectIsLoggedIn);
+  const expenses = useSelector((state) => state.expense.expenses);
+
+  console.log("Expenses from Redux store:", expenses);
+  const [allexpenses, setAllExpenses] = useState([]);
+  const { data: session } = useSession();
 
   useEffect(() => {
-    const fetchExpense = async () => {
-      const response = await fetch("/api/expense");
-      const data = await response.json();
-      setExpenses(data);
-    };
-    fetchExpense;
-  }, []);
+    try {
+      dispatch(fetchExpenses());
+    } catch (error) {
+      console.error("Error fetching expenses:", error);
+    }
+  }, [dispatch]);
 
   return (
     <section className="py-4">

@@ -4,6 +4,7 @@ import Navbar from "@/components/Nav";
 
 import { getServerSession } from "next-auth";
 import NextAuthProvider from "../utils/nextProviders";
+
 NextAuthProvider;
 
 export const metadata = {
@@ -14,12 +15,11 @@ export const metadata = {
 export default async function RcoootLayout({ children }) {
   const session = await getServerSession();
   return (
-    <Providers>
-      <html lang="en">
-        <head>
-          <title>{metadata.title}</title>
-        </head>
-
+    <html lang="en">
+      <head>
+        <title>{metadata.title}</title>
+      </head>
+      <Providers>
         <body>
           <NextAuthProvider session={session}>
             <div className="main">
@@ -32,7 +32,7 @@ export default async function RcoootLayout({ children }) {
             </main>
           </NextAuthProvider>
         </body>
-      </html>
-    </Providers>
+      </Providers>
+    </html>
   );
 }

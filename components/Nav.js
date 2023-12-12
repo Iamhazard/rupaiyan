@@ -23,7 +23,7 @@ const Navbar = () => {
       console.log("Before signOut");
       await signOut({ redirect: false });
       console.log("After signOut");
-      dispatch(SET_LOGOUT());
+      // dispatch(SET_LOGOUT());
       console.log("logout sucessfull");
     } catch (error) {
       console.error("Logout failed:", error);

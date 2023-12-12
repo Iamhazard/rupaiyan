@@ -1,7 +1,7 @@
 //for fetch
 
 import Expense from "@/models/expense";
-import { connectToDB } from "@utils/database";
+import { connectToDB } from "@/utils/database";
 
 export const GET = async (req) => {
   try {

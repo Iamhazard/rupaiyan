@@ -1,11 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { fetchIncome } from "@/Redux/Features/incomeSlice";
 import { fetchExpense } from "@/Redux/Features/expenseSlice";
 import { useSession } from "next-auth/react";
+import { pageExtensions } from "@/next.config";
 
 const CreateForm = () => {
   const router = useRouter();
@@ -22,25 +23,27 @@ const CreateForm = () => {
     router.push("/");
   };
   const params = useSearchParams();
-  const type = params.get("type");
 
-  console.log("t", type);
+  const type = params.get("type");
 
   const handleIncome = async (data) => {
     const userId = session?.user.id;
 
     try {
-      let action;
+      await dispatch(fetchIncome({ ...data, userId }));
 
-      if (type === "income") {
-        action = fetchIncome({ ...data, userId });
-      } else {
-        action = fetchExpense({ ...data, userId });
-      }
-
-      const resultAction = await dispatch(action);
       router.push("/");
-      return resultAction;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  console.log(type);
+
+  const handleExpense = async (data) => {
+    const userId = session?.user.id;
+    try {
+      await dispatch(fetchExpense({ ...data, userId }));
+      router.push("/");
     } catch (error) {
       console.log(error);
     }
@@ -73,7 +76,11 @@ const CreateForm = () => {
               />
             </svg>
           </button>
-          <form className="mt-10" onSubmit={handleSubmit(handleIncome)}>
+          <form
+            className="mt-10"
+            onSubmit={handleSubmit(
+              type === "Income" ? handleIncome : handleExpense
+            )}>
             <div className="mt-7">
               <input
                 type="text"
