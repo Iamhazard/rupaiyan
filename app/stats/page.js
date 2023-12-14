@@ -4,20 +4,33 @@ import IncomeChart from "@/components/IncomeChart";
 import currencyUtils from "@/utils/currencyUtils";
 import { IoAddCircle } from "react-icons/io5";
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { fetchAllIncome } from "@/Redux/Features/incomeSlice";
+import { useSession } from "next-auth/react";
 
 const Stats = () => {
+  const dispatch = useDispatch();
+  const incomes = useSelector((state) => state.income.incomes);
   const [activeTab, setActiveTab] = useState("expenses");
   const handleTabClick = (tabId) => {
     console.log("Tab clicked:", tabId);
     setActiveTab(tabId);
   };
+  const { data: session } = useSession();
 
-  const reports = [
-    { id: 1, name: "Expense 1", amount: 5000, date: "December 2, 2023" },
-    { id: 2, name: "Income 2", amount: 3000, date: "December 5, 2023" },
-    { id: 3, name: "Expense 3", amount: 3000, date: "December 6, 2023" },
-    { id: 4, name: "Income 4", amount: 3000, date: "December 10, 2023" },
-  ];
+  useEffect(() => {
+    if (session) {
+      try {
+        dispatch(fetchAllIncome());
+      } catch (error) {
+        console.error("Error fetching expenses:", error);
+      }
+    }
+  }, [dispatch, session]);
+
+  console.log("Stat income", incomes);
+
   const formatDate = (dateString) => {
     const inputDate = new Date(dateString);
     return inputDate.toLocaleDateString("en-US", {
@@ -78,24 +91,24 @@ const Stats = () => {
           <div className="relative z-20 flex flex-1 flex-col xl:w-1/2">
             <h2 className="text-2xl font-bold mb-4">Reports</h2>
             <div className="flex flex-col gap-4 mt-1">
-              {reports.map((report) => (
+              {incomes.map((income) => (
                 <div
-                  key={report.id}
+                  key={income.id}
                   className="flex items-center justify-between px-4 py-4 bg-slate-700 rounded-3xl mb-4 xl:mb-0">
                   <div className="flex items-center gap-2">
                     <div>
                       <IoAddCircle className="text-white" size={25} />
                     </div>
                     <div className="flex flex-col">
-                      <h4 className="capitalize text-white">{report.name}</h4>
+                      <h4 className="capitalize text-white">{income.name}</h4>
                       <small className="text-xs text-gray-400">
-                        {formatDate(report.date)}
+                        {formatDate(income.createdAt)}
                       </small>
                     </div>
                   </div>
 
                   <small className="text-yellow-200">
-                    {currencyUtils(report.amount)}
+                    {currencyUtils(income.amount)}
                   </small>
                 </div>
               ))}

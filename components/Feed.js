@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, Fragment } from "react";
+import React, { useState, Fragment, useEffect } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { Currency } from "./Navlinks/NavLinks";
 import { FaCheck } from "react-icons/fa";
@@ -8,11 +8,31 @@ import Card from "./Card";
 import { useSession } from "next-auth/react";
 import currencyUtils from "@/utils/currencyUtils";
 import ExpenseItems from "./ExpenseItems";
+import { useDispatch, useSelector } from "react-redux";
+import { CALCULATE_TOTAL_EXPENSES } from "@/Redux/Features/expenseSlice";
+import { CALCULATE_TOTAL_INCOMES } from "@/Redux/Features/incomeSlice";
 
 const Feed = () => {
+  const dispatch = useDispatch();
+  const incomes = useSelector((state) => state.income.incomes);
+  const expenses = useSelector((state) => state.expense.expenses);
+  const totalIncomeValue = useSelector(
+    (state) => state.income.totalIncomeValue
+  );
+  const totalExpensesValue = useSelector(
+    (state) => state.expense.totalExpensesValue
+  );
+
   const [selectedCurrency, setSelectedCurrency] = useState(Currency[0]);
   const { data: session } = useSession();
+  useEffect(() => {
+    if (session) {
+      dispatch(CALCULATE_TOTAL_INCOMES(incomes));
+      dispatch(CALCULATE_TOTAL_EXPENSES(expenses));
+    }
+  }, [dispatch, incomes, expenses, session]);
 
+  const finalIncome = currencyUtils(totalIncomeValue - totalExpensesValue);
   return (
     <section className="max-container padding-container flex flex-col gap-20 py-10 pb-32 md:gap-28 lg:py-20 xl:flex-row">
       <div className="flex flex-col bg-white shadow-md px-4 sm:px-6 md:px-9 lg:px-10 py-8 rounded-3xl w-58 max-w-xl">
@@ -87,7 +107,7 @@ const Feed = () => {
         </div>
         <div className="flex flex-col mt-4 sm:flex-row sm:items-center"></div>
         <small className="text-gray-600 text-2xl  text-md"> My Balance</small>
-        <h2 className=" text-4xl font'">{currencyUtils(1000)}</h2>
+        <h2 className=" text-4xl font'">{finalIncome}</h2>
         <Card />
         {/*report */}
         <button>

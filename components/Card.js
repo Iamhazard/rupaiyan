@@ -1,13 +1,36 @@
 "use client";
 import currencyUtils from "@/utils/currencyUtils";
+import { useDispatch, useSelector } from "react-redux";
+import { CALCULATE_TOTAL_EXPENSES } from "@/Redux/Features/expenseSlice";
 import {
   AiOutlineSortAscending,
   AiOutlineSortDescending,
 } from "react-icons/ai";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import {
+  CALCULATE_TOTAL_INCOMES,
+  fetchAllIncome,
+} from "@/Redux/Features/incomeSlice";
+import { useSession } from "next-auth/react";
 
 const Card = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const expenses = useSelector((state) => state.expense.expenses);
+  const incomes = useSelector((state) => state.income.incomes);
+  const { data: session } = useSession();
+  const totalExpensesValue = useSelector(
+    (state) => state.expense.totalExpensesValue
+  );
+
+  useEffect(() => {
+    dispatch(CALCULATE_TOTAL_EXPENSES(expenses));
+    dispatch(fetchAllIncome());
+    if (session) {
+      dispatch(CALCULATE_TOTAL_INCOMES(incomes));
+    }
+  }, [dispatch, expenses, incomes, session]);
 
   const handleIncomeClick = (e) => {
     e.preventDefault();
@@ -20,6 +43,7 @@ const Card = () => {
     console.log("Clicked Expense");
     router.push("/form?type=Expense");
   };
+  const totalExpenses = currencyUtils(totalExpensesValue);
 
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -28,8 +52,16 @@ const Card = () => {
         <h2 className="text-xl font-bold flex items-center">
           <AiOutlineSortAscending size={30} className="mr-2" /> Income
         </h2>
-        <span>{currencyUtils(2000)}</span>
 
+        {session?.user ? (
+          incomes &&
+          incomes.map((income) => (
+            <span key={income.id}>{currencyUtils(income.amount)}</span>
+          ))
+        ) : (
+          <span>{currencyUtils(0)}</span>
+        )}
+        <br />
         <button
           onClick={handleIncomeClick}
           type="button"
@@ -46,7 +78,7 @@ const Card = () => {
         <h2 className="text-xl font-bold flex items-center">
           <AiOutlineSortDescending size={30} className="mr-2" /> Expense
         </h2>
-        <span>{currencyUtils(3000)}</span>
+        <span>{totalExpenses}</span>
         <br />
         <button
           name="expense-btn"

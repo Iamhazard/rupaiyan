@@ -4,7 +4,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 export const fetchExpense = createAsyncThunk(
   "expense/fetchExpense",
   async (data, thunkAPI) => {
-    console.log(" from expense slice", data);
     try {
       const response = await incomeServices.createExpense(data);
       return response.data;
@@ -31,7 +30,7 @@ export const fetchExpenses = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const response = await incomeServices.getAllExpenses();
-      console.log("API response:", response);
+      // console.log("API response:", response);
       return response;
     } catch (error) {
       const message =
@@ -56,12 +55,26 @@ const expenseSlice = createSlice({
     expense: [],
     expenses: [],
     status: "idle",
+    amounts: 0,
+    totalExpensesValue: 0,
     error: null,
   },
   reducers: {
     setUserId: (state, action) => {
       state.userId = action.payload;
-      console.log(state.userId);
+      // console.log(state.userId);
+    },
+    CALCULATE_TOTAL_EXPENSES: (state, action) => {
+      const expenses = action.payload;
+
+      if (expenses && expenses) {
+        state.totalExpensesValue = expenses.reduce(
+          (total, expense) => total + parseFloat(expense.amount),
+          0
+        );
+      } else {
+        state.totalExpensesValue = 0;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -83,7 +96,7 @@ const expenseSlice = createSlice({
     builder.addCase(fetchExpenses.fulfilled, (state, action) => {
       state.status = "succeeded";
       state.expenses = action.payload;
-      console.log("Action Payload:", action.payload);
+      // console.log("Action Payload:", action.payload);
     });
     builder.addCase(fetchExpenses.rejected, (state, action) => {
       state.status = "failed";
@@ -91,6 +104,6 @@ const expenseSlice = createSlice({
     });
   },
 });
-export const { setUserId } = expenseSlice.actions;
+export const { setUserId, CALCULATE_TOTAL_EXPENSES } = expenseSlice.actions;
 
 export default expenseSlice.reducer;

@@ -3,7 +3,7 @@ import mongoose, { Schema, model, models } from "mongoose";
 const IncomeSchema = new Schema(
   {
     creator: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
     },
     name: {
