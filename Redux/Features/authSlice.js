@@ -2,6 +2,7 @@
 
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { signIn } from "next-auth/react";
+import { toast } from "react-toastify";
 
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
@@ -24,6 +25,7 @@ export const loginUser = createAsyncThunk(
       return userData;
     } catch (error) {
       console.error("Login failed:", error);
+      toast.error("Login failed:", error);
 
       return rejectWithValue(error.message);
     }
@@ -52,6 +54,7 @@ const authSlice = createSlice({
       state.username = "";
       state.email = "";
       state.user = { username: "", email: "" }; //reset user
+      return initialState;
     }, //for saving data
     SET_USER(state, action) {
       const { username, email } = action.payload || {};
@@ -59,12 +62,16 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    builder.addCase(loginUser.pending, (state) => {
+      state.loading = true;
+    });
     builder.addCase(loginUser.fulfilled, (state, action) => {
       const { username, email } = action.payload;
       state.isLoggedIn = true;
       state.username = username;
       state.email = email;
       state.user = { username, email };
+      console.log("from action", action.payload);
     });
     builder.addCase(loginUser.rejected, (state, action) => {
       console.error("Login failed:", action.payload);

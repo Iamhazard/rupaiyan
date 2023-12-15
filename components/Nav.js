@@ -23,7 +23,7 @@ const Navbar = () => {
       console.log("Before signOut");
       await signOut({ redirect: false });
       console.log("After signOut");
-      // dispatch(SET_LOGOUT());
+      dispatch(SET_LOGOUT());
       console.log("logout sucessfull");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -57,13 +57,24 @@ const Navbar = () => {
             />
           </Link>
         ) : (
-          <Button
-            onClick={handleLogout}
-            type="button"
-            title="Logout"
-            icon="/assets/Svg/user.svg"
-            variant="btn_dark_green"
-          />
+          <>
+            <Button
+              onClick={handleLogout}
+              type="button"
+              title="Logout"
+              icon="/assets/Svg/user.svg"
+              variant="btn_dark_green"
+            />
+            <Link href="/stats/modals">
+              <Image
+                src={session?.user?.image}
+                width={37}
+                height={37}
+                className="rounded-full"
+                alt="profile"
+              />
+            </Link>
+          </>
         )}
       </div>
       {/* Updated button structure */}

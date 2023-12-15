@@ -110,9 +110,8 @@ const Feed = () => {
         <h2 className=" text-4xl font'">{finalIncome}</h2>
         <Card />
         {/*report */}
-        <button>
-          <ExpenseItems />
-        </button>
+
+        <ExpenseItems />
       </div>
     </section>
   );

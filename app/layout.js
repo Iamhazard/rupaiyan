@@ -1,7 +1,8 @@
 import { Providers } from "@/Redux/Providers";
 import "./globals.css";
 import Navbar from "@/components/Nav";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { getServerSession } from "next-auth";
 import NextAuthProvider from "../utils/nextProviders";
 
@@ -25,7 +26,7 @@ export default async function RcoootLayout({ children }) {
             <div className="main">
               <div className="gradient" />
             </div>
-
+            <ToastContainer />
             <Navbar />
             <main className="z-10 flex justify-center items-center flex-col max-w-80 mx-auto sm:px-16 px-6">
               {children}

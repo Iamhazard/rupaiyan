@@ -10,10 +10,10 @@ const createIncome = async (data) => {
 
 const createExpense = async (data) => {
   const response = await axios.post("/api/expense/new", data);
-
-  return response.data;
+  return response;
 };
 
+//get all income
 const getAllIncomes = async () => {
   try {
     const response = await fetch("/api/income", {
@@ -58,12 +58,32 @@ const getAllExpenses = async () => {
   }
 };
 
-//get all income
+//delete expenses
+const deleteExpenseById = async (id) => {
+  console.log("id from servces", id);
+  try {
+    const response = await fetch(`/api/expense/${id.toString()}`, {
+      method: "delete",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error("Error deleting expense:", error);
+
+    throw error;
+  }
+};
 
 const incomeServices = {
   createIncome,
   createExpense,
   getAllExpenses,
   getAllIncomes,
+  deleteExpenseById,
 };
 export default incomeServices;

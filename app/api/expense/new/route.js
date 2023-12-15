@@ -1,10 +1,18 @@
 import Expense from "@/models/expense";
 import { connectToDB } from "@/utils/database";
+import { useSession } from "next-auth/react";
 
 export const POST = async (req, res) => {
   const { userId, name, amount, category, notes } = await req.json();
+  const { data: session } = useSession();
+  console.log("session from route", session);
 
   try {
+    if (!userId || !name || !amount || !category) {
+      return new Response(JSON.stringify("Missing required fields"), {
+        status: 400,
+      });
+    }
     await connectToDB();
     const newExpense = new Expense({
       creator: userId,

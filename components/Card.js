@@ -24,11 +24,14 @@ const Card = () => {
     (state) => state.expense.totalExpensesValue
   );
 
+  // console.log("session id", session.user.id);
+
   useEffect(() => {
-    dispatch(CALCULATE_TOTAL_EXPENSES(expenses));
-    dispatch(fetchAllIncome());
-    if (session) {
+    if (session?.user?.id) {
+      dispatch(CALCULATE_TOTAL_EXPENSES(expenses));
+      dispatch(fetchAllIncome());
       dispatch(CALCULATE_TOTAL_INCOMES(incomes));
+    } else {
     }
   }, [dispatch, expenses, incomes, session]);
 
@@ -53,13 +56,14 @@ const Card = () => {
           <AiOutlineSortAscending size={30} className="mr-2" /> Income
         </h2>
 
-        {session?.user ? (
-          incomes &&
+        {session?.user.id ? (
           incomes.map((income) => (
-            <span key={income.id}>{currencyUtils(income.amount)}</span>
+            <span key={income._id}>
+              <b>{income.amount}</b>
+            </span>
           ))
         ) : (
-          <span>{currencyUtils(0)}</span>
+          <span>(0)</span>
         )}
         <br />
         <button

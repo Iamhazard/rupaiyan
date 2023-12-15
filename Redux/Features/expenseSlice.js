@@ -6,7 +6,8 @@ export const fetchExpense = createAsyncThunk(
   async (data, thunkAPI) => {
     try {
       const response = await incomeServices.createExpense(data);
-      return response.data;
+      const parsedData = JSON.parse(response.data);
+      return parsedData;
     } catch (error) {
       const message =
         (error.response &&
@@ -43,6 +44,29 @@ export const fetchExpenses = createAsyncThunk(
       console.log(error);
       return thunkAPI.rejectWithValue({
         error: "Failed to get all expenses",
+        details: error.response?.data,
+      });
+    }
+  }
+);
+//for deleteing data
+export const deleteExpense = createAsyncThunk(
+  "expense/deleteExpense",
+  async (id, thunkAPI) => {
+    console.log("slice", id);
+    try {
+      return await incomeServices.deleteExpenseById(id);
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      console.log(message);
+      console.log(error);
+      return thunkAPI.rejectWithValue({
+        error: "Failed to delele a expenses",
         details: error.response?.data,
       });
     }
@@ -101,6 +125,17 @@ const expenseSlice = createSlice({
     builder.addCase(fetchExpenses.rejected, (state, action) => {
       state.status = "failed";
       state.error = action.error.message;
+    });
+    builder.addCase(deleteExpense.pending, (state, action) => {
+      state.status = "loading";
+    });
+    builder.addCase(deleteExpense.fulfilled, (action, state) => {
+      state.status = "succeeded";
+    });
+    builder.addCase(deleteExpense.rejected, (state, action) => {
+      state.status = "failed";
+      state.error = action.error.message;
+      console.log(action.error.message);
     });
   },
 });

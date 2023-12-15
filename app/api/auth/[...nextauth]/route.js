@@ -83,7 +83,7 @@ const authOptions = {
       if (account?.provider == "credentials") {
         return true;
       }
-      if (account?.provider == "google") {
+      if (account?.provider === "google") {
         await connectToDB();
         try {
           const existingUser = await User.findOne({ email: user.email });
@@ -91,12 +91,12 @@ const authOptions = {
           // console.log("Google user:", user);
           if (!existingUser) {
             const randomPassword = generateRandomPassword();
-            await User.create({
+            const newUSer = await User.create({
               email: user.email,
               username: user.name.replace(" ", "").toLowerCase(),
               password: randomPassword,
             });
-            user.id = existingUser._id.toString();
+            user.id = newUSer._id.toString();
           }
 
           return true;

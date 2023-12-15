@@ -1,13 +1,6 @@
 "use client";
 import { Chart } from "react-google-charts";
-
-const expenses = [
-  { id: 1, name: "Income 1", amount: 5000, date: "December 2, 2023" },
-  { id: 2, name: "income 2", amount: 3000, date: "December 3, 2023" },
-  { id: 3, name: "income 3", amount: 3000, date: "December 3, 2023" },
-  { id: 4, name: "income 4", amount: 3000, date: "December 3, 2023" },
-  { id: 5, name: "income 5", amount: 3000, date: "December 3, 2023" },
-];
+import { useSelector } from "react-redux";
 
 export const options = {
   title: "My Income",
@@ -15,9 +8,14 @@ export const options = {
 };
 
 export function IncomeChart() {
-  const chartData = expenses.map((expense) => [expense.name, expense.amount]);
+  const incomes = useSelector((state) => state.income.incomes);
 
-  const chartDataWithColumns = [["Expense", "Amount"], ...chartData];
+  const chartData = incomes.map((income) => [
+    income.name,
+    parseFloat(income.amount),
+  ]);
+
+  const chartDataWithColumns = [["Income", "Amount"], ...chartData];
   return (
     <Chart
       chartType="PieChart"

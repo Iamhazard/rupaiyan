@@ -4,7 +4,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 export const fetchIncome = createAsyncThunk(
   "income/fetchIncome",
   async (data, thunkAPI) => {
-    console.log(" from income slice", data);
     try {
       const response = await incomeServices.createIncome(data);
       return response.data;

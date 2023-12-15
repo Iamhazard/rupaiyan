@@ -69,6 +69,35 @@ body {
   /* Adjust the opacity */
 }
 
+.pagination {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2rem 0;
+  font-size: 1rem;
+}
+
+.pagination .page-num {
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 3px;
+  font-weight: normal;
+  color: #e3a003c8;
+  border: 1px solid #464646;
+  margin: 2px;
+}
+
+.pagination .page-num:hover {
+  color: #2ab9f7;
+  background-color: var(--light-blue);
+}
+
+.activePage {
+  color: #5d44ff;
+  background-color: var(--light-blue);
+  height: 100%;
+}
 @layer base{
 
   button{
