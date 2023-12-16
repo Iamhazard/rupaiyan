@@ -17,7 +17,8 @@ import {
 const Stats = () => {
   const dispatch = useDispatch();
   const incomes = useSelector((state) => state.income.incomes);
-  const expenses = useSelector((state) => state.expense.expenses);
+  // const expenses = useSelector((state) => state.expense.expenses);
+  const [expenses, setexpenses] = useState([0]);
   const selectFilter = useSelector(selectinitialFilter);
   const [activeTab, setActiveTab] = useState("expenses");
   const handleTabClick = (tabId) => {
@@ -25,12 +26,13 @@ const Stats = () => {
     setActiveTab(tabId);
   };
   const { data: session } = useSession();
-
+  console.log("stats", incomes);
+  console.log("stats", expenses);
   useEffect(() => {
     if (session) {
       try {
         dispatch(fetchAllIncome());
-        dispatch(fetchExpenses());
+        // dispatch(fetchExpenses());
       } catch (error) {
         console.error("Error fetching expenses:", error);
       }
@@ -81,6 +83,13 @@ const Stats = () => {
         });
       default:
         return [];
+    }
+  };
+
+  const handelEdit = (income) => {
+    console.log("Clicked icon");
+    if (income) {
+      router.push(`/update-items/?id=${income._id}`);
     }
   };
 
@@ -139,7 +148,7 @@ const Stats = () => {
           </button>
         </div>
         <div className="max-container padding-container flex flex-col gap-20  pb-32 md:gap-28 lg:py-20 xl:flex-row w-[75vh]">
-          <div className="relative z-20 flex flex-1 flex-col xl:w-1/2">
+          <div className="relative  flex flex-1 flex-col xl:w-1/2">
             <h2 className="text-2xl font-bold mb-4">History</h2>
             <div className="flex flex-col gap-4 mt-1">
               {(filteredItems() || []).map((item) => (
@@ -148,7 +157,11 @@ const Stats = () => {
                   className="flex items-center justify-between px-4 py-4 bg-slate-700 rounded-3xl mb-4 xl:mb-0">
                   <div className="flex items-center gap-2">
                     <div>
-                      <IoAddCircle className="text-white" size={25} />
+                      <IoAddCircle
+                        className="text-white"
+                        size={25}
+                        onClick={() => handelEdit}
+                      />
                     </div>
                     <div className="flex flex-col col-span-2">
                       <h4 className="capitalize text-white ">{item.name}</h4>

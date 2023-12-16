@@ -10,6 +10,8 @@ import { toast } from "react-toastify";
 import { HiMiniTrash } from "react-icons/hi2";
 import Modals from "./Modals";
 import ReactPaginate from "react-paginate";
+import { useRouter } from "next/navigation";
+import { SET_LOGIN, SET_USER } from "@/Redux/Features/authSlice";
 
 const formatDate = (dateString) => {
   const inputDate = new Date(dateString);
@@ -20,12 +22,28 @@ const formatDate = (dateString) => {
   });
 };
 
-const ExpenseItems = () => {
+const ExpenseItems = ({ params }) => {
+  const router = useRouter();
   const dispatch = useDispatch();
   const [selectedExpense, setSelectedExpense] = useState(null);
   const expenses = useSelector((state) => state.expense.expenses);
 
   const { data: session } = useSession();
+
+  useEffect(() => {
+    if (!expenses.length && session?.user.id) {
+      dispatch(fetchExpenses(session?.user.id));
+      dispatch(SET_LOGIN(true));
+      dispatch(SET_USER(session?.user.email));
+        .then(() => toast.success("Successfully fetched expenses"))
+        .catch((error) => {
+          console.error("Error fetching expenses:", error);
+          toast.error("Failed to fetch expenses");
+        });
+    } else {
+      toast.error("Please add expenses");
+    }
+  }, [dispatch, session?.user.id, expenses, session?.user.email]);
 
   //begin pagination
   const [currentItems, setCurrentItems] = useState([]);
@@ -34,29 +52,31 @@ const ExpenseItems = () => {
   const itemsPerPage = 4;
 
   useEffect(() => {
-    const endOffset = itemOffset + itemsPerPage;
-    setCurrentItems(expenses.slice(itemOffset, endOffset));
-    setPageCount(Math.ceil(expenses.length / itemsPerPage));
-  }, [itemOffset, itemsPerPage, expenses]);
+    console.log("first", expenses);
+
+    if (Array.isArray(expenses)) {
+      console.log("Fetching expenses...");
+      console.log("before update - itemOffset:", itemOffset);
+      console.log("before update - itemsPerPage:", itemsPerPage);
+      console.log("before update - expenses:", expenses);
+
+      const endOffset = itemOffset + itemsPerPage;
+      setCurrentItems(expenses.slice(itemOffset, endOffset));
+
+      console.log("after update - currentItems:", currentItems);
+      console.log(
+        "after update - pageCount:",
+        Math.ceil(expenses.length / itemsPerPage)
+      );
+      setPageCount(Math.ceil(expenses.length / itemsPerPage));
+    }
+  }, [itemOffset, itemsPerPage, expenses, currentItems]);
 
   const handlePageClick = (event) => {
     const newOffset = (event.selected * itemsPerPage) % expenses.length;
     setItemOffset(newOffset);
   };
   //end pagination
-
-  useEffect(() => {
-    if (session?.user?.id) {
-      try {
-        dispatch(fetchExpenses());
-        toast.success("Fetched expenses");
-      } catch (error) {
-        console.error("Error fetching expenses:", error);
-      }
-    } else {
-      // Redirect to login page
-    }
-  }, [dispatch, session]);
 
   const handleDeleteClick = (expense) => {
     console.log("Delete clicked:", expense);
@@ -73,15 +93,15 @@ const ExpenseItems = () => {
       await dispatch(deleteExpense(selectedExpense._id));
 
       await dispatch(fetchExpenses());
-      console.log("comming id", selectedExpense._id);
     } else {
       console.error("Selected expense or its _id is undefined.");
       setSelectedExpense(null);
     }
   };
-
-  const handleEdit = () => {
-    console.log("edit btn is clicked");
+  const handleEdit = (expense) => {
+    if (expense) {
+      router.push(`/update-items/?id=${expense._id}`);
+    }
   };
 
   return (
@@ -104,7 +124,7 @@ const ExpenseItems = () => {
                       <div className="flex items-center gap-2">
                         <div>
                           <MdEditAttributes
-                            onClick={handleEdit}
+                            onClick={() => handleEdit(expense)}
                             className="text-white"
                             size={23}
                           />

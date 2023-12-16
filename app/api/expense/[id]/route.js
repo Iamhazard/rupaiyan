@@ -17,28 +17,30 @@ export const GET = async (request, { params }) => {
 
 //patch
 
-export const PATCH = async (request, { params }) => {
-  const { prompt, tag } = await request.json();
+export const PATCH = async (req, { params }) => {
+  const { name, amount, category, notes } = await req.json();
 
   try {
     await connectToDB();
 
-    // Find the existing prompt by ID
-    const existingPrompt = await Prompt.findById(params.id);
+    // Find the existing expemses by ID
+    const existingIncome = await Expense.findById(params.id);
 
-    if (!existingPrompt) {
-      return new Response("Prompt not found", { status: 404 });
+    if (!existingIncome) {
+      return new Response("income not found", { status: 404 });
     }
 
-    // Update the prompt with new data
-    existingPrompt.prompt = prompt;
-    existingPrompt.tag = tag;
+    // Update the expenses with new data
+    existingIncome.name = name;
+    existingIncome.amount = amount;
+    existingIncome.category = category;
+    existingIncome.notes = notes;
 
-    await existingPrompt.save();
+    await existingIncome.save();
 
-    return new Response("Successfully updated the Prompts", { status: 200 });
+    return new Response("Successfully updated the Expenses", { status: 200 });
   } catch (error) {
-    return new Response("Error Updating Prompt", { status: 500 });
+    return new Response("Error Updating Expenses", { status: 500 });
   }
 };
 

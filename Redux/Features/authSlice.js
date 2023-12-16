@@ -54,7 +54,6 @@ const authSlice = createSlice({
       state.username = "";
       state.email = "";
       state.user = { username: "", email: "" }; //reset user
-      return initialState;
     }, //for saving data
     SET_USER(state, action) {
       const { username, email } = action.payload || {};

@@ -28,10 +28,10 @@ export const fetchExpense = createAsyncThunk(
 
 export const fetchExpenses = createAsyncThunk(
   "expense/fetchExpenses",
-  async (_, thunkAPI) => {
+  async (userId, thunkAPI) => {
     try {
-      const response = await incomeServices.getAllExpenses();
-      // console.log("API response:", response);
+      const response = await incomeServices.getExpensesByUserId(userId);
+      console.log("API response:", response);
       return response;
     } catch (error) {
       const message =
@@ -73,11 +73,36 @@ export const deleteExpense = createAsyncThunk(
   }
 );
 
+//for getting expense
+export const getExpense = createAsyncThunk(
+  "expense/getExpense",
+  async (id, thunkAPI) => {
+    try {
+      const expense = await incomeServices.getExpenseById(id);
+      console.log("API expense:", expense);
+      return expense;
+    } catch (error) {
+      const message =
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
+        error.message ||
+        error.toString();
+      console.log(message);
+      console.log(error);
+      return thunkAPI.rejectWithValue({
+        error: "Failed to get all expenses",
+        details: error.response?.data,
+      });
+    }
+  }
+);
+
 const expenseSlice = createSlice({
   name: "expense",
   initialState: {
     expense: [],
-    expenses: [],
+    expenses: {},
     status: "idle",
     amounts: 0,
     totalExpensesValue: 0,
@@ -91,7 +116,7 @@ const expenseSlice = createSlice({
     CALCULATE_TOTAL_EXPENSES: (state, action) => {
       const expenses = action.payload;
 
-      if (expenses && expenses) {
+      if (expenses && Array.isArray(expenses)) {
         state.totalExpensesValue = expenses.reduce(
           (total, expense) => total + parseFloat(expense.amount),
           0
@@ -113,6 +138,8 @@ const expenseSlice = createSlice({
       .addCase(fetchExpense.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
+        console.error("Error fetching expenses:", action.error.message);
+        console.error(action.error.details);
       });
     builder.addCase(fetchExpenses.pending, (state) => {
       state.status = "loading";
@@ -133,6 +160,18 @@ const expenseSlice = createSlice({
       state.status = "succeeded";
     });
     builder.addCase(deleteExpense.rejected, (state, action) => {
+      state.status = "failed";
+      state.error = action.error.message;
+      console.log(action.error.message);
+    });
+    builder.addCase(getExpense.pending, (state, action) => {
+      state.status = "loading";
+    });
+    builder.addCase(getExpense.fulfilled, (action, state) => {
+      state.status = "succeeded";
+      state.expense = action.payload;
+    });
+    builder.addCase(getExpense.rejected, (state, action) => {
       state.status = "failed";
       state.error = action.error.message;
       console.log(action.error.message);

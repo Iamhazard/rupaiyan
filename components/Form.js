@@ -1,51 +1,19 @@
-"use client";
-import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useDispatch } from "react-redux";
+import React from "react";
 import { useForm } from "react-hook-form";
-import { fetchIncome } from "@/Redux/Features/incomeSlice";
-import { fetchExpense } from "@/Redux/Features/expenseSlice";
-import { useSession } from "next-auth/react";
 
-const CreateForm = () => {
+const Form = ({ onhandleSubmit, type, handleClick }) => {
   const router = useRouter();
   const {
     register,
-    handleSubmit,
     formState: { errors },
   } = useForm();
-  const { data: session } = useSession();
-  // console.log("Session:", session);
-  const dispatch = useDispatch();
-  const navigateToHome = () => {
-    router.push("/");
-  };
-  const params = useSearchParams();
+  //   const params = useSearchParams();
+  //   const type = params.get("type");
 
-  const type = params.get("type");
+  const handleIncome = async (data) => {};
 
-  const handleIncome = async (data) => {
-    const userId = session?.user.id;
-
-    try {
-      await dispatch(fetchIncome({ ...data, userId }));
-
-      router.push("/");
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleExpense = async (data) => {
-    const userId = session?.user.id;
-    try {
-      await dispatch(fetchExpense({ ...data, userId }));
-      router.push("/");
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+  const handleExpense = async (data) => {};
   return (
     <section className="flex flex-col bg-white shadow-md px-4 sm:px-6 md:px-8 lg:px-10 py-8 rounded-3xl w-50 max-w-md">
       <div className="relative sm:max-w-2xl w-full">
@@ -58,7 +26,7 @@ const CreateForm = () => {
             className="block mt-3 text-sm text-gray-700 text-center font-semibold">
             {type}
           </label>
-          <button className="navbar-close" onClick={navigateToHome}>
+          <button className="navbar-close" onClick={handleClick}>
             <svg
               className="h-6 w-6 text-gray-400 cursor-pointer hover:text-gray-500"
               xmlns="http://www.w3.org/2000/svg"
@@ -73,11 +41,7 @@ const CreateForm = () => {
               />
             </svg>
           </button>
-          <form
-            className="mt-10"
-            onSubmit={handleSubmit(
-              type === "Income" ? handleIncome : handleExpense
-            )}>
+          <form className="mt-10" onSubmit={onhandleSubmit}>
             <div className="mt-7">
               <input
                 type="text"
@@ -155,4 +119,4 @@ const CreateForm = () => {
   );
 };
 
-export default CreateForm;
+export default Form;

@@ -9,7 +9,6 @@ export const options = {
 
 export function ExpenseChart() {
   const expenses = useSelector((state) => state.expense.expenses);
-  console.log(expenses);
 
   const chartData = expenses.map((expense) => [
     expense.name,
