@@ -1,5 +1,6 @@
 import Expense from "@/models/expense";
-import { connectToDB } from "@utils/database";
+import { connectToDB } from "@/utils/database";
+
 //get
 export const GET = async (request, { params }) => {
   try {
