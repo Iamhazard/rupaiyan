@@ -15,6 +15,7 @@ import { CALCULATE_TOTAL_INCOMES } from "@/Redux/Features/incomeSlice";
 const Feed = () => {
   const dispatch = useDispatch();
   const incomes = useSelector((state) => state.income.incomes);
+
   const expenses = useSelector((state) => state.expense.expenses);
   const totalIncomeValue = useSelector(
     (state) => state.income.totalIncomeValue
@@ -22,15 +23,16 @@ const Feed = () => {
   const totalExpensesValue = useSelector(
     (state) => state.expense.totalExpensesValue
   );
+  // console.log("total exx", totalExpensesValue);
 
   const [selectedCurrency, setSelectedCurrency] = useState(Currency[0]);
   const { data: session } = useSession();
   useEffect(() => {
-    if (session) {
-      dispatch(CALCULATE_TOTAL_INCOMES(incomes));
+    if (session?.user.id) {
+      dispatch(CALCULATE_TOTAL_INCOMES(incomes.Incomes));
       dispatch(CALCULATE_TOTAL_EXPENSES(expenses));
     }
-  }, [dispatch, incomes, expenses, session]);
+  }, [dispatch, incomes, expenses, session?.user.id]);
 
   const finalIncome = currencyUtils(totalIncomeValue - totalExpensesValue);
   return (

@@ -13,7 +13,7 @@ const createExpense = async (data) => {
   return response;
 };
 
-//get all income
+//get all user income
 const getAllIncomes = async () => {
   try {
     const response = await fetch("/api/income", {
@@ -35,7 +35,7 @@ const getAllIncomes = async () => {
   }
 };
 
-//get expenes
+//get  all user expenes
 
 const getAllExpenses = async () => {
   try {
@@ -112,12 +112,13 @@ const updateExpense = async (id, formData) => {
 const getExpensesByUserId = async (userId) => {
   try {
     const response = await fetch(`/api/users/${userId}/expenses`);
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Bad Request: ${errorText}`);
     }
     const data = await response.json();
-    console.log("DaTA FROM EXPENSES", data);
+
     return data;
   } catch (error) {
     if (error.response) {
@@ -125,6 +126,30 @@ const getExpensesByUserId = async (userId) => {
       console.error("Status code:", error.response.status);
     } else {
       console.error("Error in getExpensesByUserId:", error.message);
+    }
+    throw error;
+  }
+};
+
+//get incomes for login user
+
+const getIncomesByUserId = async (userId) => {
+  try {
+    const response = await fetch(`/api/users/${userId}/incomes`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Bad Request: ${errorText}`);
+    }
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    if (error.response) {
+      console.error("Response data:", error.response.data);
+      console.error("Status code:", error.response.status);
+    } else {
+      console.error("Error in Getting User Incomes:", error.message);
     }
     throw error;
   }
@@ -139,5 +164,6 @@ const incomeServices = {
   getExpenseById,
   updateExpense,
   getExpensesByUserId,
+  getIncomesByUserId,
 };
 export default incomeServices;

@@ -24,16 +24,24 @@ const Card = () => {
     (state) => state.expense.totalExpensesValue
   );
 
-  // console.log("session id", session.user.id);
+  const totalIncomeValue = useSelector(
+    (state) => state.income.totalIncomeValue
+  );
+  // console.log(" income", totalIncomeValue);
+  // console.log(" expense", totalExpensesValue);
 
   useEffect(() => {
-    if (session?.user?.id) {
-      dispatch(CALCULATE_TOTAL_EXPENSES(expenses));
-      dispatch(fetchAllIncome());
-      dispatch(CALCULATE_TOTAL_INCOMES(incomes));
-    } else {
-    }
-  }, [dispatch, expenses, incomes, session]);
+    const fetchData = async () => {
+      if (session?.user?.id) {
+        await dispatch(fetchAllIncome(session.user.id));
+
+        dispatch(CALCULATE_TOTAL_INCOMES(incomes));
+        dispatch(CALCULATE_TOTAL_EXPENSES(expenses));
+      }
+    };
+
+    fetchData();
+  }, [dispatch, expenses, incomes, session?.user.id]);
 
   const handleIncomeClick = (e) => {
     e.preventDefault();
@@ -47,6 +55,7 @@ const Card = () => {
     router.push("/form?type=Expense");
   };
   const totalExpenses = currencyUtils(totalExpensesValue);
+  const totalIncome = currencyUtils(totalIncomeValue);
 
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -56,15 +65,8 @@ const Card = () => {
           <AiOutlineSortAscending size={30} className="mr-2" /> Income
         </h2>
 
-        {session?.user.id ? (
-          incomes.map((income) => (
-            <span key={income._id}>
-              <b>{income.amount}</b>
-            </span>
-          ))
-        ) : (
-          <span>(0)</span>
-        )}
+        <span>{totalIncome}</span>
+
         <br />
         <button
           onClick={handleIncomeClick}

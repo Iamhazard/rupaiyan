@@ -4,14 +4,17 @@ import { MdEditAttributes } from "react-icons/md";
 import currencyUtils from "@/utils/currencyUtils";
 import { useDispatch, useSelector } from "react-redux";
 import { useSession } from "next-auth/react";
-import { deleteExpense, fetchExpenses } from "@/Redux/Features/expenseSlice";
+import {
+  deleteExpense,
+  fetchExpenses,
+  selectExpenses,
+} from "@/Redux/Features/expenseSlice";
 import Link from "next/link";
-import { toast } from "react-toastify";
 import { HiMiniTrash } from "react-icons/hi2";
 import Modals from "./Modals";
 import ReactPaginate from "react-paginate";
 import { useRouter } from "next/navigation";
-import { SET_LOGIN, SET_USER } from "@/Redux/Features/authSlice";
+import { SET_LOGIN } from "@/Redux/Features/authSlice";
 
 const formatDate = (dateString) => {
   const inputDate = new Date(dateString);
@@ -22,61 +25,44 @@ const formatDate = (dateString) => {
   });
 };
 
-const ExpenseItems = ({ params }) => {
+const ExpenseItems = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [selectedExpense, setSelectedExpense] = useState(null);
-  const expenses = useSelector((state) => state.expense.expenses);
+  const expenses = useSelector(selectExpenses);
 
   const { data: session } = useSession();
-
   useEffect(() => {
-    if (!expenses.length && session?.user.id) {
-      dispatch(fetchExpenses(session?.user.id));
-      dispatch(SET_LOGIN(true));
-      dispatch(SET_USER(session?.user.email));
-        .then(() => toast.success("Successfully fetched expenses"))
-        .catch((error) => {
-          console.error("Error fetching expenses:", error);
-          toast.error("Failed to fetch expenses");
-        });
-    } else {
-      toast.error("Please add expenses");
-    }
-  }, [dispatch, session?.user.id, expenses, session?.user.email]);
+    const fetchData = async () => {
+      await dispatch(SET_LOGIN(true));
+      await dispatch(fetchExpenses(session?.user.id));
+    };
+    fetchData();
+  }, [dispatch, session?.user.id]);
 
   //begin pagination
   const [currentItems, setCurrentItems] = useState([]);
   const [pageCount, setPageCount] = useState(0);
   const [itemOffset, setItemOffset] = useState(0);
-  const itemsPerPage = 4;
+  const itemsPerPage = 3;
 
   useEffect(() => {
-    console.log("first", expenses);
-
+    // console.log("Type of expenses:", typeof expenses);
     if (Array.isArray(expenses)) {
-      console.log("Fetching expenses...");
-      console.log("before update - itemOffset:", itemOffset);
-      console.log("before update - itemsPerPage:", itemsPerPage);
-      console.log("before update - expenses:", expenses);
-
       const endOffset = itemOffset + itemsPerPage;
       setCurrentItems(expenses.slice(itemOffset, endOffset));
-
-      console.log("after update - currentItems:", currentItems);
-      console.log(
-        "after update - pageCount:",
-        Math.ceil(expenses.length / itemsPerPage)
-      );
       setPageCount(Math.ceil(expenses.length / itemsPerPage));
+    } else {
+      console.error("Expenses is not an array:", expenses);
     }
-  }, [itemOffset, itemsPerPage, expenses, currentItems]);
+  }, [expenses, itemOffset, itemsPerPage]);
 
   const handlePageClick = (event) => {
     const newOffset = (event.selected * itemsPerPage) % expenses.length;
     setItemOffset(newOffset);
   };
-  //end pagination
+
+  //END OF PAGINATION
 
   const handleDeleteClick = (expense) => {
     console.log("Delete clicked:", expense);

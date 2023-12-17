@@ -10,10 +10,9 @@ export const options = {
 export function ExpenseChart() {
   const expenses = useSelector((state) => state.expense.expenses);
 
-  const chartData = expenses.map((expense) => [
-    expense.name,
-    parseFloat(expense.amount),
-  ]);
+  const chartData = Array.isArray(expenses)
+    ? expenses.map((expense) => [expense.name, parseFloat(expense.amount)])
+    : [];
   const chartDataWithColumns = [["Expense", "Amount"], ...chartData];
 
   return (

@@ -6,8 +6,6 @@ export const connectToDB = async () => {
   mongoose.set("strict", true);
 
   if (isConnected) {
-    console.log("MongoDB is already connected");
-    console.log("MongoDB_URI:", process.env.MONGO_URI);
     return;
   }
   try {

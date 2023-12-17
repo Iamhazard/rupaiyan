@@ -6,7 +6,10 @@ export const fetchIncome = createAsyncThunk(
   async (data, thunkAPI) => {
     try {
       const response = await incomeServices.createIncome(data);
-      return response.data;
+      if (!response || !response.Incomes || !Array.isArray(response.Incomes)) {
+        throw new Error("Invalid response format");
+      }
+      return response;
     } catch (error) {
       const message =
         (error.response &&
@@ -23,11 +26,13 @@ export const fetchIncome = createAsyncThunk(
   }
 );
 
+//fetch incomes of User
+
 export const fetchAllIncome = createAsyncThunk(
   "income/fetchAllIncome",
-  async (_, thunkAPI) => {
+  async (userId, thunkAPI) => {
     try {
-      const response = await incomeServices.getAllIncomes();
+      const response = await incomeServices.getIncomesByUserId(userId);
 
       return response;
     } catch (error) {
@@ -61,11 +66,12 @@ const incomeSlice = createSlice({
     CALCULATE_TOTAL_INCOMES: (state, action) => {
       const incomes = action.payload;
 
-      if (incomes && incomes) {
-        state.totalIncomeValue = incomes.reduce(
-          (total, income) => total + parseFloat(income.amount),
-          0
-        );
+      if (Array.isArray(incomes) && incomes.length > 0) {
+        state.totalIncomeValue = incomes.reduce((total, income) => {
+          const amount = parseFloat(income.amount);
+
+          return total + amount;
+        }, 0);
       } else {
         state.totalIncomeValue = 0;
       }
@@ -99,5 +105,5 @@ const incomeSlice = createSlice({
   },
 });
 export const { setUserId, CALCULATE_TOTAL_INCOMES } = incomeSlice.actions;
-
+export const selectIncome = (state) => state.income.incomes;
 export default incomeSlice.reducer;

@@ -24,14 +24,14 @@ export const fetchExpense = createAsyncThunk(
   }
 );
 
-//for getting all expenses
+//for getting all expenses of users
 
 export const fetchExpenses = createAsyncThunk(
   "expense/fetchExpenses",
   async (userId, thunkAPI) => {
     try {
       const response = await incomeServices.getExpensesByUserId(userId);
-      console.log("API response:", response);
+
       return response;
     } catch (error) {
       const message =
@@ -79,7 +79,7 @@ export const getExpense = createAsyncThunk(
   async (id, thunkAPI) => {
     try {
       const expense = await incomeServices.getExpenseById(id);
-      console.log("API expense:", expense);
+
       return expense;
     } catch (error) {
       const message =
@@ -115,12 +115,12 @@ const expenseSlice = createSlice({
     },
     CALCULATE_TOTAL_EXPENSES: (state, action) => {
       const expenses = action.payload;
+      if (Array.isArray(expenses) && expenses.length > 0) {
+        state.totalExpensesValue = expenses.reduce((total, expense) => {
+          const amount = parseFloat(expense.amount);
 
-      if (expenses && Array.isArray(expenses)) {
-        state.totalExpensesValue = expenses.reduce(
-          (total, expense) => total + parseFloat(expense.amount),
-          0
-        );
+          return total + amount;
+        }, 0);
       } else {
         state.totalExpensesValue = 0;
       }
@@ -179,5 +179,5 @@ const expenseSlice = createSlice({
   },
 });
 export const { setUserId, CALCULATE_TOTAL_EXPENSES } = expenseSlice.actions;
-
+export const selectExpenses = (state) => state.expense.expenses;
 export default expenseSlice.reducer;

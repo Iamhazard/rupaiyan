@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactRefresh: false,
   experimental: {
-    appDir: true,
+    serverComponents: true,
     serverComponentsExternalPackages: ["mongoose"],
   },
   images: {
